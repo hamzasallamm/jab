@@ -19,7 +19,7 @@ export function Login() {
     try {
       const res = await api.post<{ access_token: string }>('/auth/login', { email, password })
       await setToken(res.access_token)
-      navigate('/profile')
+      navigate('/')
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong')
     } finally {

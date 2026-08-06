@@ -39,7 +39,7 @@ export function SignupFighter() {
         },
       })
       await setToken(res.access_token)
-      navigate('/profile')
+      navigate('/')
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong')
     } finally {

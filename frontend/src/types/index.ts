@@ -69,3 +69,54 @@ export interface FollowEntry {
   id: number
   gym: GymSummary
 }
+
+export type PostType = 'text' | 'fight_result' | 'sparring_session'
+export type MediaType = 'image' | 'video'
+export type FightOutcome = 'win' | 'loss' | 'draw' | 'no_contest'
+
+export interface PostMediaItem {
+  id: number
+  media_url: string
+  media_type: MediaType
+}
+
+export interface PostTagItem {
+  user_id: number
+  display_name: string
+}
+
+export interface PostAuthor {
+  user_id: number
+  account_type: AccountType
+  display_name: string
+  profile_picture_url: string | null
+}
+
+export interface FightResultData {
+  opponent_name: string
+  sport: Sport
+  result: FightOutcome
+  event_name: string | null
+  event_date: string | null
+}
+
+export interface SparringSessionData {
+  id: number
+  sport: Sport
+  session_date: string
+  session_time: string
+  location: string
+  skill_level_notes: string | null
+}
+
+export interface PostItem {
+  id: number
+  post_type: PostType
+  body: string | null
+  created_at: string
+  author: PostAuthor
+  media: PostMediaItem[]
+  tags: PostTagItem[]
+  fight_result: FightResultData | null
+  sparring_session: SparringSessionData | null
+}

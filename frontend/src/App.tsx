@@ -10,6 +10,7 @@ import { Profile } from './pages/Profile'
 import { Fighters } from './pages/Fighters'
 import { Gyms } from './pages/Gyms'
 import { Connections } from './pages/Connections'
+import { Home } from './pages/Home'
 
 function Nav() {
   return (
@@ -27,26 +28,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (loading) return <p className="mt-16 text-center text-steel-light">Loading...</p>
   if (!me) return <Navigate to="/login" replace />
   return <>{children}</>
-}
-
-function Home() {
-  const { me } = useAuth()
-  return (
-    <div className="mx-auto mt-24 max-w-2xl px-4 text-center">
-      <h1 className="font-display text-6xl">
-        Train. Connect. <span className="text-jab">Compete.</span>
-      </h1>
-      <p className="mt-4 text-steel-light">The network for combat sports athletes and gyms.</p>
-      {!me && (
-        <Link
-          to="/signup"
-          className="mt-8 inline-block font-display text-lg rounded bg-jab px-8 py-3 tracking-wide hover:bg-jab-dark"
-        >
-          Get Started
-        </Link>
-      )}
-    </div>
-  )
 }
 
 function AppRoutes() {
