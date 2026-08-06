@@ -9,7 +9,9 @@ app = FastAPI(title="JAB API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    # Regex (not a fixed list) so the dev server is also reachable from a phone
+    # on the same LAN, e.g. http://192.168.1.19:5173.
+    allow_origin_regex=r"http://(localhost|192\.168\.\d{1,3}\.\d{1,3}):5173",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
