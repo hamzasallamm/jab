@@ -158,7 +158,7 @@ function RecordEdit({
   return (
     <div className="rounded border border-steel p-3">
       <p className="text-xs uppercase tracking-wider text-steel-light mb-2">{label}</p>
-      <div className="flex gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <TextInput type="number" value={w} onChange={(e) => onChange(Number(e.target.value), l, d)} />
         <TextInput type="number" value={l} onChange={(e) => onChange(w, Number(e.target.value), d)} />
         <TextInput type="number" value={d} onChange={(e) => onChange(w, l, Number(e.target.value))} />
