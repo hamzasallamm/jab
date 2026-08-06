@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, Time
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, Time, UniqueConstraint
 from sqlalchemy import Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
-from app.models.enums import FightOutcome, PostType, Sport
+from app.models.enums import FightOutcome, MediaType, PostType, Sport
 
 
 class Post(Base):
@@ -24,6 +24,39 @@ class Post(Base):
     sparring_session: Mapped["SparringSession"] = relationship(
         back_populates="post", uselist=False, cascade="all, delete-orphan"
     )
+    media: Mapped[list["PostMedia"]] = relationship(
+        back_populates="post", cascade="all, delete-orphan", order_by="PostMedia.position"
+    )
+    tags: Mapped[list["PostTag"]] = relationship(back_populates="post", cascade="all, delete-orphan")
+
+
+class PostMedia(Base):
+    """A photo or video attached to a post. Multiple rows -> a gallery/carousel."""
+
+    __tablename__ = "post_media"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
+    media_url: Mapped[str] = mapped_column(String(500), nullable=False)
+    media_type: Mapped[MediaType] = mapped_column(Enum(MediaType, name="media_type"), nullable=False)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+
+    post: Mapped["Post"] = relationship(back_populates="media")
+
+
+class PostTag(Base):
+    """A user tagged in a post (e.g. tagging a sparring partner or opponent)."""
+
+    __tablename__ = "post_tags"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
+    tagged_user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    post: Mapped["Post"] = relationship(back_populates="tags")
+    tagged_user: Mapped["User"] = relationship()
+
+    __table_args__ = (UniqueConstraint("post_id", "tagged_user_id", name="uq_post_tag"),)
 
 
 class FightResult(Base):

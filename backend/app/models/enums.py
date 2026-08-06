@@ -40,3 +40,8 @@ class SparringRequestStatus(str, enum.Enum):
     pending = "pending"
     accepted = "accepted"
     declined = "declined"
+
+
+class MediaType(str, enum.Enum):
+    image = "image"
+    video = "video"
