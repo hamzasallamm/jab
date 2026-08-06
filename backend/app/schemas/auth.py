@@ -4,7 +4,9 @@ from app.models.enums import FighterStatus, Sport
 
 
 class FighterSignupExtra(BaseModel):
-    name: str
+    first_name: str
+    last_name: str
+    fight_name: str | None = None
     age: int = Field(ge=0, le=100)
     sport: Sport
     gym: str | None = None

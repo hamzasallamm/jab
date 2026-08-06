@@ -1,8 +1,34 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { api } from '../api/client'
-import { Button, Field, Select, TextInput } from '../components/ui'
+import { api, API_BASE } from '../api/client'
+import { Button, ErrorText, Field, Select, TextInput } from '../components/ui'
 import type { FighterProfile, GymProfile, Sport } from '../types'
+
+function fighterDisplayName(profile: Pick<FighterProfile, 'first_name' | 'last_name' | 'fight_name'>) {
+  return profile.fight_name
+    ? `${profile.first_name} "${profile.fight_name}" ${profile.last_name}`
+    : `${profile.first_name} ${profile.last_name}`
+}
+
+function initials(profile: Pick<FighterProfile, 'first_name' | 'last_name'>) {
+  return `${profile.first_name[0] ?? ''}${profile.last_name[0] ?? ''}`.toUpperCase()
+}
+
+function Avatar({ profile, size = 96 }: { profile: FighterProfile; size?: number }) {
+  const src = profile.profile_picture_url ? `${API_BASE}${profile.profile_picture_url}` : null
+  return (
+    <div
+      className="flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-steel bg-black/40 font-display text-2xl text-steel-light"
+      style={{ width: size, height: size }}
+    >
+      {src ? (
+        <img src={src} alt={fighterDisplayName(profile)} className="h-full w-full object-cover" />
+      ) : (
+        initials(profile)
+      )}
+    </div>
+  )
+}
 
 export function Profile() {
   const { me, refreshMe } = useAuth()
@@ -23,12 +49,17 @@ function FighterProfileCard({ profile, onSaved }: { profile: FighterProfile; onS
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(profile)
   const [saving, setSaving] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function save() {
     setSaving(true)
     try {
       await api.patch('/profiles/me/fighter', {
-        name: form.name,
+        first_name: form.first_name,
+        last_name: form.last_name,
+        fight_name: form.fight_name || null,
         age: Number(form.age),
         sport: form.sport,
         gym: form.gym,
@@ -47,13 +78,38 @@ function FighterProfileCard({ profile, onSaved }: { profile: FighterProfile; onS
     }
   }
 
+  async function handlePhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoError(null)
+    setUploadingPhoto(true)
+    try {
+      await api.postForm('/profiles/me/fighter/photo', (() => {
+        const data = new FormData()
+        data.append('file', file)
+        return data
+      })())
+      await onSaved()
+    } catch {
+      setPhotoError('Could not upload photo. Use a JPEG, PNG, or WebP under 5MB.')
+    } finally {
+      setUploadingPhoto(false)
+      e.target.value = ''
+    }
+  }
+
   if (!editing) {
     return (
       <div>
-        <h1 className="font-display text-4xl">{profile.name}</h1>
-        <p className="mt-1 text-steel-light uppercase tracking-wide text-sm">
-          {profile.sport} · {profile.status} · {profile.gym || 'Unaffiliated'} · Age {profile.age}
-        </p>
+        <div className="flex items-center gap-5">
+          <Avatar profile={profile} />
+          <div>
+            <h1 className="font-display text-4xl">{fighterDisplayName(profile)}</h1>
+            <p className="mt-1 text-steel-light uppercase tracking-wide text-sm">
+              {profile.sport} · {profile.status} · {profile.gym || 'Unaffiliated'} · Age {profile.age}
+            </p>
+          </div>
+        </div>
         <div className="mt-6 grid grid-cols-2 gap-4">
           <RecordBlock label="Amateur" w={profile.amateur_wins} l={profile.amateur_losses} d={profile.amateur_draws} />
           <RecordBlock label="Pro" w={profile.pro_wins} l={profile.pro_losses} d={profile.pro_draws} />
@@ -68,8 +124,34 @@ function FighterProfileCard({ profile, onSaved }: { profile: FighterProfile; onS
   return (
     <div className="flex flex-col gap-4">
       <h1 className="font-display text-3xl">Edit Profile</h1>
-      <Field label="Name">
-        <TextInput value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+      <div className="flex items-center gap-5">
+        <Avatar profile={profile} />
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handlePhotoSelected}
+          />
+          <Button type="button" variant="ghost" onClick={() => fileInputRef.current?.click()} disabled={uploadingPhoto}>
+            {uploadingPhoto ? 'Uploading...' : 'Change Photo'}
+          </Button>
+          {photoError && <ErrorText>{photoError}</ErrorText>}
+        </div>
+      </div>
+      <Field label="First Name">
+        <TextInput value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
+      </Field>
+      <Field label="Last Name">
+        <TextInput value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+      </Field>
+      <Field label="Fight Name (optional)">
+        <TextInput
+          value={form.fight_name ?? ''}
+          onChange={(e) => setForm({ ...form, fight_name: e.target.value })}
+          placeholder={'e.g. "The Notorious"'}
+        />
       </Field>
       <Field label="Age">
         <TextInput

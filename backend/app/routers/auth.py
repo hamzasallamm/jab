@@ -26,7 +26,9 @@ def signup_fighter(payload: FighterSignup, db: Session = Depends(get_db)):
 
     profile = FighterProfile(
         user_id=user.id,
-        name=payload.fighter.name,
+        first_name=payload.fighter.first_name,
+        last_name=payload.fighter.last_name,
+        fight_name=payload.fighter.fight_name,
         age=payload.fighter.age,
         sport=payload.fighter.sport,
         gym=payload.fighter.gym,

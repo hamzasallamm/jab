@@ -8,7 +8,10 @@ class FighterProfileOut(BaseModel):
 
     id: int
     user_id: int
-    name: str
+    first_name: str
+    last_name: str
+    fight_name: str | None
+    profile_picture_url: str | None
     age: int
     sport: Sport
     gym: str | None
@@ -22,7 +25,9 @@ class FighterProfileOut(BaseModel):
 
 
 class FighterProfileUpdate(BaseModel):
-    name: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    fight_name: str | None = None
     age: int | None = Field(default=None, ge=0, le=100)
     sport: Sport | None = None
     gym: str | None = None

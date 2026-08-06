@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
+from app.core.media import save_avatar
 from app.database import get_db
 from app.models.enums import AccountType
 from app.models.fighter_profile import FighterProfile
@@ -67,6 +68,22 @@ def update_my_gym_profile(
     db.commit()
     db.refresh(profile)
     return GymProfileOut.from_model(profile)
+
+
+@router.post("/me/fighter/photo", response_model=FighterProfileOut)
+def upload_my_fighter_photo(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.account_type != AccountType.fighter or current_user.fighter_profile is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a fighter account")
+
+    profile = current_user.fighter_profile
+    profile.profile_picture_url = save_avatar(current_user.id, file)
+    db.commit()
+    db.refresh(profile)
+    return profile
 
 
 @router.get("/fighters/{fighter_id}", response_model=FighterProfileOut)

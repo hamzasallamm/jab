@@ -8,7 +8,9 @@ import type { FighterStatus, Sport } from '../types'
 export function SignupFighter() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [fightName, setFightName] = useState('')
   const [age, setAge] = useState('')
   const [sport, setSport] = useState<Sport>('mma')
   const [gym, setGym] = useState('')
@@ -26,7 +28,15 @@ export function SignupFighter() {
       const res = await api.post<{ access_token: string }>('/auth/signup/fighter', {
         email,
         password,
-        fighter: { name, age: Number(age), sport, gym: gym || null, status },
+        fighter: {
+          first_name: firstName,
+          last_name: lastName,
+          fight_name: fightName || null,
+          age: Number(age),
+          sport,
+          gym: gym || null,
+          status,
+        },
       })
       await setToken(res.access_token)
       navigate('/profile')
@@ -41,8 +51,18 @@ export function SignupFighter() {
     <div className="mx-auto mt-12 max-w-md px-4 pb-16">
       <h1 className="font-display text-4xl">Fighter Sign Up</h1>
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
-        <Field label="Name">
-          <TextInput required value={name} onChange={(e) => setName(e.target.value)} />
+        <Field label="First Name">
+          <TextInput required value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+        </Field>
+        <Field label="Last Name">
+          <TextInput required value={lastName} onChange={(e) => setLastName(e.target.value)} />
+        </Field>
+        <Field label="Fight Name (optional)">
+          <TextInput
+            value={fightName}
+            onChange={(e) => setFightName(e.target.value)}
+            placeholder={'e.g. "The Notorious"'}
+          />
         </Field>
         <Field label="Email">
           <TextInput type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />

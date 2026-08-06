@@ -5,7 +5,10 @@ export type AccountType = 'fighter' | 'gym'
 export interface FighterProfile {
   id: number
   user_id: number
-  name: string
+  first_name: string
+  last_name: string
+  fight_name: string | null
+  profile_picture_url: string | null
   age: number
   sport: Sport
   gym: string | null
