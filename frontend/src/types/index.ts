@@ -37,3 +37,35 @@ export interface Me {
   fighter_profile: FighterProfile | null
   gym_profile: GymProfile | null
 }
+
+export type ConnectionStatusType = 'pending' | 'accepted' | 'declined'
+
+export interface FighterSummary {
+  user_id: number
+  first_name: string
+  last_name: string
+  fight_name: string | null
+  profile_picture_url: string | null
+  sport: Sport
+  gym: string | null
+  status: FighterStatus
+}
+
+export interface GymSummary {
+  user_id: number
+  org_name: string
+  location: string | null
+  sports: Sport[]
+}
+
+export interface ConnectionEntry {
+  id: number
+  status: ConnectionStatusType
+  direction: 'incoming' | 'outgoing'
+  fighter: FighterSummary
+}
+
+export interface FollowEntry {
+  id: number
+  gym: GymSummary
+}

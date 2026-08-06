@@ -5,6 +5,9 @@ import { SignupChoice } from './pages/SignupChoice'
 import { SignupFighter } from './pages/SignupFighter'
 import { SignupGym } from './pages/SignupGym'
 import { Profile } from './pages/Profile'
+import { Fighters } from './pages/Fighters'
+import { Gyms } from './pages/Gyms'
+import { Connections } from './pages/Connections'
 
 function Nav() {
   const { me, logout } = useAuth()
@@ -16,6 +19,19 @@ function Nav() {
       <div className="flex items-center gap-4 text-sm">
         {me ? (
           <>
+            <Link to="/gyms" className="hover:text-jab-red">
+              Gyms
+            </Link>
+            {me.account_type === 'fighter' && (
+              <>
+                <Link to="/fighters" className="hover:text-jab-red">
+                  Fighters
+                </Link>
+                <Link to="/connections" className="hover:text-jab-red">
+                  Connections
+                </Link>
+              </>
+            )}
             <Link to="/profile" className="hover:text-jab-red">
               Profile
             </Link>
@@ -80,6 +96,30 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gyms"
+          element={
+            <ProtectedRoute>
+              <Gyms />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/fighters"
+          element={
+            <ProtectedRoute>
+              <Fighters />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/connections"
+          element={
+            <ProtectedRoute>
+              <Connections />
             </ProtectedRoute>
           }
         />

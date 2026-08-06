@@ -35,11 +35,11 @@ export function TextInput({ onFocus, onMouseUp, className = '', ...props }: Inpu
   )
 }
 
-export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
+export function Select({ className = '', ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...props}
-      className="rounded border border-steel bg-black/30 px-3 py-2 text-bone focus:border-jab-red focus:outline-none"
+      className={`rounded border border-steel bg-black/30 px-3 py-2 text-bone focus:border-jab-red focus:outline-none ${className}`}
     />
   )
 }
