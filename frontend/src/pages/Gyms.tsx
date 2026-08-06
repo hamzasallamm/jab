@@ -69,7 +69,7 @@ export function Gyms() {
         </Select>
         <TextInput placeholder="Filter by location" value={location} onChange={(e) => setLocation(e.target.value)} />
       </div>
-      {actionError && <p className="mt-3 text-sm text-jab-red">{actionError}</p>}
+      {actionError && <p className="mt-3 text-sm text-jab">{actionError}</p>}
 
       {loading ? (
         <p className="mt-8 text-steel-light">Loading...</p>

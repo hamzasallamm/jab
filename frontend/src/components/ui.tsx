@@ -30,7 +30,7 @@ export function TextInput({ onFocus, onMouseUp, className = '', ...props }: Inpu
       {...props}
       onFocus={handleFocus}
       onMouseUp={handleMouseUp}
-      className={`w-full min-w-0 rounded border border-steel bg-black/30 px-3 py-2 text-bone placeholder:text-steel-light focus:border-jab-red focus:outline-none ${className}`}
+      className={`w-full min-w-0 rounded border border-steel bg-surface px-3 py-2 text-bone placeholder:text-steel-light focus:border-jab focus:outline-none ${className}`}
     />
   )
 }
@@ -39,7 +39,7 @@ export function Select({ className = '', ...props }: SelectHTMLAttributes<HTMLSe
   return (
     <select
       {...props}
-      className={`rounded border border-steel bg-black/30 px-3 py-2 text-bone focus:border-jab-red focus:outline-none ${className}`}
+      className={`rounded border border-steel bg-surface px-3 py-2 text-bone focus:border-jab focus:outline-none ${className}`}
     />
   )
 }
@@ -53,7 +53,7 @@ export function Button({
   const base = 'font-display text-lg tracking-wide px-6 py-2.5 rounded transition-colors disabled:opacity-50'
   const styles =
     variant === 'primary'
-      ? 'bg-jab-red text-bone hover:bg-jab-red-dark'
+      ? 'bg-jab text-bone hover:bg-jab-dark'
       : 'border border-steel text-bone hover:border-bone'
   return (
     <button className={`${base} ${styles} ${className}`} {...rest}>
@@ -63,5 +63,5 @@ export function Button({
 }
 
 export function ErrorText({ children }: { children: ReactNode }) {
-  return <p className="text-sm text-jab-red">{children}</p>
+  return <p className="text-sm text-jab">{children}</p>
 }

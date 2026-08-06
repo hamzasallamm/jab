@@ -102,7 +102,7 @@ export function SignupFighter() {
       </form>
       <p className="mt-6 text-sm text-steel-light">
         Already have an account?{' '}
-        <Link to="/login" className="text-jab-red">
+        <Link to="/login" className="text-jab">
           Log in
         </Link>
       </p>

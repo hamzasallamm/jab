@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes, Link } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider, useTheme } from './context/ThemeContext'
 import { Login } from './pages/Login'
 import { SignupChoice } from './pages/SignupChoice'
 import { SignupFighter } from './pages/SignupFighter'
@@ -9,42 +10,56 @@ import { Fighters } from './pages/Fighters'
 import { Gyms } from './pages/Gyms'
 import { Connections } from './pages/Connections'
 
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme()
+  return (
+    <button
+      onClick={toggleTheme}
+      aria-label="Toggle theme"
+      className="rounded border border-steel px-2.5 py-1 text-xs uppercase tracking-wide hover:border-jab hover:text-jab"
+    >
+      {theme === 'light' ? 'Dark' : 'Light'}
+    </button>
+  )
+}
+
 function Nav() {
   const { me, logout } = useAuth()
   return (
     <nav className="flex items-center justify-between border-b border-steel px-6 py-4">
-      <Link to="/" className="font-display text-2xl tracking-widest text-jab-red">
+      <Link to="/" className="font-display text-2xl tracking-widest text-jab">
         JAB
       </Link>
       <div className="flex items-center gap-4 text-sm">
+        <ThemeToggle />
         {me ? (
           <>
-            <Link to="/gyms" className="hover:text-jab-red">
+            <Link to="/gyms" className="hover:text-jab">
               Gyms
             </Link>
             {me.account_type === 'fighter' && (
               <>
-                <Link to="/fighters" className="hover:text-jab-red">
+                <Link to="/fighters" className="hover:text-jab">
                   Fighters
                 </Link>
-                <Link to="/connections" className="hover:text-jab-red">
+                <Link to="/connections" className="hover:text-jab">
                   Connections
                 </Link>
               </>
             )}
-            <Link to="/profile" className="hover:text-jab-red">
+            <Link to="/profile" className="hover:text-jab">
               Profile
             </Link>
-            <button onClick={logout} className="hover:text-jab-red">
+            <button onClick={logout} className="hover:text-jab">
               Log Out
             </button>
           </>
         ) : (
           <>
-            <Link to="/login" className="hover:text-jab-red">
+            <Link to="/login" className="hover:text-jab">
               Log In
             </Link>
-            <Link to="/signup" className="hover:text-jab-red">
+            <Link to="/signup" className="hover:text-jab">
               Sign Up
             </Link>
           </>
@@ -66,13 +81,13 @@ function Home() {
   return (
     <div className="mx-auto mt-24 max-w-2xl px-4 text-center">
       <h1 className="font-display text-6xl">
-        Train. Connect. <span className="text-jab-red">Compete.</span>
+        Train. Connect. <span className="text-jab">Compete.</span>
       </h1>
       <p className="mt-4 text-steel-light">The network for combat sports athletes and gyms.</p>
       {!me && (
         <Link
           to="/signup"
-          className="mt-8 inline-block font-display text-lg rounded bg-jab-red px-8 py-3 tracking-wide hover:bg-jab-red-dark"
+          className="mt-8 inline-block font-display text-lg rounded bg-jab px-8 py-3 tracking-wide hover:bg-jab-dark"
         >
           Get Started
         </Link>
@@ -130,9 +145,11 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

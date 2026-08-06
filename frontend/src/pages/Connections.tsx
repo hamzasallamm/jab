@@ -53,7 +53,7 @@ export function Connections() {
   return (
     <div className="mx-auto mt-12 max-w-2xl px-4 pb-16">
       <h1 className="font-display text-4xl">Connections</h1>
-      {error && <p className="mt-3 text-sm text-jab-red">{error}</p>}
+      {error && <p className="mt-3 text-sm text-jab">{error}</p>}
 
       {incoming.length > 0 && (
         <Section title="Requests">
@@ -84,7 +84,7 @@ export function Connections() {
         {accepted.length === 0 ? (
           <p className="text-steel-light">
             No connections yet.{' '}
-            <Link to="/fighters" className="text-jab-red">
+            <Link to="/fighters" className="text-jab">
               Browse fighters
             </Link>{' '}
             to connect.

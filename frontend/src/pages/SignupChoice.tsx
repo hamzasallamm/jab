@@ -7,7 +7,7 @@ export function SignupChoice() {
       <div className="mt-8 flex flex-col gap-4">
         <Link
           to="/signup/fighter"
-          className="font-display text-lg rounded bg-jab-red px-6 py-3 tracking-wide hover:bg-jab-red-dark"
+          className="font-display text-lg rounded bg-jab px-6 py-3 tracking-wide hover:bg-jab-dark"
         >
           I'm a Fighter
         </Link>
@@ -20,7 +20,7 @@ export function SignupChoice() {
       </div>
       <p className="mt-6 text-sm text-steel-light">
         Already have an account?{' '}
-        <Link to="/login" className="text-jab-red">
+        <Link to="/login" className="text-jab">
           Log in
         </Link>
       </p>

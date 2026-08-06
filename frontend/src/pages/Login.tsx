@@ -44,7 +44,7 @@ export function Login() {
       </form>
       <p className="mt-6 text-sm text-steel-light">
         No account?{' '}
-        <Link to="/signup" className="text-jab-red">
+        <Link to="/signup" className="text-jab">
           Sign up
         </Link>
       </p>

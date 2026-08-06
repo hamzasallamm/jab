@@ -73,7 +73,7 @@ export function Fighters() {
         </Select>
         <TextInput placeholder="Filter by gym" value={gym} onChange={(e) => setGym(e.target.value)} />
       </div>
-      {actionError && <p className="mt-3 text-sm text-jab-red">{actionError}</p>}
+      {actionError && <p className="mt-3 text-sm text-jab">{actionError}</p>}
 
       {loading ? (
         <p className="mt-8 text-steel-light">Loading...</p>
@@ -98,7 +98,7 @@ export function Fighters() {
                   </div>
                 </div>
                 {conn?.status === 'accepted' ? (
-                  <span className="text-sm uppercase tracking-wide text-canvas">Connected</span>
+                  <span className="text-sm uppercase tracking-wide text-amber">Connected</span>
                 ) : conn?.status === 'pending' && conn.direction === 'outgoing' ? (
                   <Button variant="ghost" onClick={() => cancelRequest(conn.connectionId)}>
                     Cancel Request

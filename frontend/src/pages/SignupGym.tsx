@@ -72,7 +72,7 @@ export function SignupGym() {
                 key={s}
                 onClick={() => toggleSport(s)}
                 className={`rounded border px-3 py-1.5 text-sm uppercase tracking-wide ${
-                  sports.includes(s) ? 'border-jab-red bg-jab-red/20 text-bone' : 'border-steel text-steel-light'
+                  sports.includes(s) ? 'border-jab bg-jab/20 text-bone' : 'border-steel text-steel-light'
                 }`}
               >
                 {s}
@@ -85,7 +85,7 @@ export function SignupGym() {
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={4}
-            className="rounded border border-steel bg-black/30 px-3 py-2 text-bone placeholder:text-steel-light focus:border-jab-red focus:outline-none"
+            className="rounded border border-steel bg-surface px-3 py-2 text-bone placeholder:text-steel-light focus:border-jab focus:outline-none"
             placeholder="Short description of your gym"
           />
         </Field>
@@ -96,7 +96,7 @@ export function SignupGym() {
       </form>
       <p className="mt-6 text-sm text-steel-light">
         Already have an account?{' '}
-        <Link to="/login" className="text-jab-red">
+        <Link to="/login" className="text-jab">
           Log in
         </Link>
       </p>

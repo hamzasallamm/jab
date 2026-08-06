@@ -18,7 +18,7 @@ export function FighterAvatar({ profile, size = 96 }: { profile: PicturedFighter
   const src = profile.profile_picture_url ? `${API_BASE}${profile.profile_picture_url}` : null
   return (
     <div
-      className="flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-steel bg-black/40 font-display text-2xl text-steel-light"
+      className="flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-steel bg-surface font-display text-2xl text-steel-light"
       style={{ width: size, height: size }}
     >
       {src ? (
