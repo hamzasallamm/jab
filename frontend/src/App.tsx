@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, Link } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import { ThemeProvider, useTheme } from './context/ThemeContext'
+import { ThemeProvider } from './context/ThemeContext'
+import { NavMenu } from './components/NavMenu'
 import { Login } from './pages/Login'
 import { SignupChoice } from './pages/SignupChoice'
 import { SignupFighter } from './pages/SignupFighter'
@@ -10,61 +11,13 @@ import { Fighters } from './pages/Fighters'
 import { Gyms } from './pages/Gyms'
 import { Connections } from './pages/Connections'
 
-function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme()
-  return (
-    <button
-      onClick={toggleTheme}
-      aria-label="Toggle theme"
-      className="rounded border border-steel px-2.5 py-1 text-xs uppercase tracking-wide hover:border-jab hover:text-jab"
-    >
-      {theme === 'light' ? 'Dark' : 'Light'}
-    </button>
-  )
-}
-
 function Nav() {
-  const { me, logout } = useAuth()
   return (
     <nav className="flex items-center justify-between border-b border-steel px-6 py-4">
       <Link to="/" className="font-display text-2xl tracking-widest text-jab">
         JAB
       </Link>
-      <div className="flex items-center gap-4 text-sm">
-        <ThemeToggle />
-        {me ? (
-          <>
-            <Link to="/gyms" className="hover:text-jab">
-              Gyms
-            </Link>
-            {me.account_type === 'fighter' && (
-              <>
-                <Link to="/fighters" className="hover:text-jab">
-                  Fighters
-                </Link>
-                <Link to="/connections" className="hover:text-jab">
-                  Connections
-                </Link>
-              </>
-            )}
-            <Link to="/profile" className="hover:text-jab">
-              Profile
-            </Link>
-            <button onClick={logout} className="hover:text-jab">
-              Log Out
-            </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className="hover:text-jab">
-              Log In
-            </Link>
-            <Link to="/signup" className="hover:text-jab">
-              Sign Up
-            </Link>
-          </>
-        )}
-      </div>
+      <NavMenu />
     </nav>
   )
 }
