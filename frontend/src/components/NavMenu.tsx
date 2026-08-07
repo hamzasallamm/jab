@@ -96,6 +96,9 @@ export function NavMenu() {
         <nav className="mt-20 flex flex-1 flex-col overflow-y-auto">
           {me ? (
             <>
+              <MenuLink to="/sparring" onClick={close}>
+                Sparring
+              </MenuLink>
               <MenuLink to="/gyms" onClick={close}>
                 Gyms
               </MenuLink>

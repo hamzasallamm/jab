@@ -120,3 +120,30 @@ export interface PostItem {
   fight_result: FightResultData | null
   sparring_session: SparringSessionData | null
 }
+
+export type SparringRequestStatusType = 'pending' | 'accepted' | 'declined'
+export type MyRequestStatus = 'none' | SparringRequestStatusType
+
+export interface SparringSessionCard {
+  post_id: number
+  session_id: number
+  sport: Sport
+  session_date: string
+  session_time: string
+  location: string
+  skill_level_notes: string | null
+  body: string | null
+  created_at: string
+  author: PostAuthor
+  is_owner: boolean
+  my_request_status: MyRequestStatus
+  pending_request_count: number
+}
+
+export interface SparringRequesterItem {
+  request_id: number
+  status: SparringRequestStatusType
+  requester_user_id: number
+  requester_display_name: string
+  requester_profile_picture_url: string | null
+}
