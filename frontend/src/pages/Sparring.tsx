@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, ApiError } from '../api/client'
 import { Avatar } from '../components/Avatar'
-import { Button, Select, TextInput } from '../components/ui'
+import { Button, ErrorText, Field, Select, TextInput } from '../components/ui'
 import type { SparringRequesterItem, SparringSessionCard, Sport } from '../types'
 
 export function Sparring() {
@@ -50,6 +50,8 @@ export function Sparring() {
           <option value="bjj">BJJ</option>
         </Select>
       </div>
+
+      <HostSessionForm onHosted={load} />
 
       {error && <p className="mt-3 text-sm text-jab">{error}</p>}
 
@@ -210,6 +212,99 @@ function RequesterList({
           )}
         </div>
       ))}
+    </div>
+  )
+}
+
+function HostSessionForm({ onHosted }: { onHosted: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [sport, setSport] = useState<Sport>('mma')
+  const [sessionDate, setSessionDate] = useState('')
+  const [sessionTime, setSessionTime] = useState('')
+  const [location, setLocation] = useState('')
+  const [notes, setNotes] = useState('')
+  const [body, setBody] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function resetForm() {
+    setSessionDate('')
+    setSessionTime('')
+    setLocation('')
+    setNotes('')
+    setBody('')
+  }
+
+  async function submit() {
+    setError(null)
+    setSubmitting(true)
+    try {
+      const form = new FormData()
+      form.append('sport', sport)
+      form.append('session_date', sessionDate)
+      form.append('session_time', sessionTime)
+      form.append('location', location)
+      if (notes) form.append('skill_level_notes', notes)
+      if (body) form.append('body', body)
+      await api.postForm('/posts/sparring-session', form)
+      resetForm()
+      setOpen(false)
+      onHosted()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Something went wrong')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (!open) {
+    return (
+      <Button onClick={() => setOpen(true)} className="mt-4">
+        Host a Sparring Session
+      </Button>
+    )
+  }
+
+  return (
+    <div className="mt-4 rounded border border-steel p-4">
+      <p className="font-display text-lg">Host a Sparring Session</p>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <Field label="Sport">
+          <Select value={sport} onChange={(e) => setSport(e.target.value as Sport)}>
+            <option value="boxing">Boxing</option>
+            <option value="mma">MMA</option>
+            <option value="bjj">BJJ</option>
+          </Select>
+        </Field>
+        <Field label="Location">
+          <TextInput value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Austin, TX" />
+        </Field>
+        <Field label="Date">
+          <TextInput type="date" value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} />
+        </Field>
+        <Field label="Time">
+          <TextInput type="time" value={sessionTime} onChange={(e) => setSessionTime(e.target.value)} />
+        </Field>
+        <div className="col-span-2">
+          <Field label="Skill Level Notes (optional)">
+            <TextInput value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </Field>
+        </div>
+        <div className="col-span-2">
+          <Field label="Caption (optional)">
+            <TextInput value={body} onChange={(e) => setBody(e.target.value)} />
+          </Field>
+        </div>
+      </div>
+      {error && <ErrorText>{error}</ErrorText>}
+      <div className="mt-4 flex gap-3">
+        <Button onClick={submit} disabled={submitting}>
+          {submitting ? 'Posting...' : 'Post Session'}
+        </Button>
+        <Button variant="ghost" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
+      </div>
     </div>
   )
 }

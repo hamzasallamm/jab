@@ -3,12 +3,11 @@ import { api, ApiError } from '../api/client'
 import { Button, ErrorText, Field, Select, TextInput } from './ui'
 import type { ConnectionEntry, FightOutcome, PostItem, Sport } from '../types'
 
-type Tab = 'text' | 'fight_result' | 'sparring_session'
+type Tab = 'text' | 'fight_result'
 
 const TAB_LABELS: Record<Tab, string> = {
   text: 'Text',
   fight_result: 'Fight Result',
-  sparring_session: 'Sparring Session',
 }
 
 export function CreatePost({ onCreated }: { onCreated: (post: PostItem) => void }) {
@@ -25,12 +24,6 @@ export function CreatePost({ onCreated }: { onCreated: (post: PostItem) => void 
   const [result, setResult] = useState<FightOutcome>('win')
   const [eventName, setEventName] = useState('')
   const [eventDate, setEventDate] = useState('')
-
-  const [ssSport, setSsSport] = useState<Sport>('mma')
-  const [sessionDate, setSessionDate] = useState('')
-  const [sessionTime, setSessionTime] = useState('')
-  const [location, setLocation] = useState('')
-  const [notes, setNotes] = useState('')
 
   useEffect(() => {
     api
@@ -50,10 +43,6 @@ export function CreatePost({ onCreated }: { onCreated: (post: PostItem) => void 
     setOpponentName('')
     setEventName('')
     setEventDate('')
-    setSessionDate('')
-    setSessionTime('')
-    setLocation('')
-    setNotes('')
   }
 
   async function submit() {
@@ -77,13 +66,6 @@ export function CreatePost({ onCreated }: { onCreated: (post: PostItem) => void 
         form.append('result', result)
         if (eventName) form.append('event_name', eventName)
         if (eventDate) form.append('event_date', eventDate)
-      } else if (tab === 'sparring_session') {
-        path = '/posts/sparring-session'
-        form.append('sport', ssSport)
-        form.append('session_date', sessionDate)
-        form.append('session_time', sessionTime)
-        form.append('location', location)
-        if (notes) form.append('skill_level_notes', notes)
       }
 
       const post = await api.postForm<PostItem>(path, form)
@@ -147,32 +129,6 @@ export function CreatePost({ onCreated }: { onCreated: (post: PostItem) => void 
             <Field label="Date (optional)">
               <TextInput type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
             </Field>
-          </div>
-        )}
-
-        {tab === 'sparring_session' && (
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Sport">
-              <Select value={ssSport} onChange={(e) => setSsSport(e.target.value as Sport)}>
-                <option value="boxing">Boxing</option>
-                <option value="mma">MMA</option>
-                <option value="bjj">BJJ</option>
-              </Select>
-            </Field>
-            <Field label="Location">
-              <TextInput value={location} onChange={(e) => setLocation(e.target.value)} />
-            </Field>
-            <Field label="Date">
-              <TextInput type="date" value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} />
-            </Field>
-            <Field label="Time">
-              <TextInput type="time" value={sessionTime} onChange={(e) => setSessionTime(e.target.value)} />
-            </Field>
-            <div className="col-span-2">
-              <Field label="Skill Level Notes (optional)">
-                <TextInput value={notes} onChange={(e) => setNotes(e.target.value)} />
-              </Field>
-            </div>
           </div>
         )}
 

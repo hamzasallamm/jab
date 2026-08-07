@@ -147,7 +147,7 @@ def get_feed(limit: int = 50, current_user: User = Depends(get_current_user), db
     posts = (
         db.query(Post)
         .options(*_post_options())
-        .filter(Post.author_id.in_(author_ids))
+        .filter(Post.author_id.in_(author_ids), Post.post_type != PostType.sparring_session)
         .order_by(Post.created_at.desc())
         .limit(limit)
         .all()
