@@ -15,6 +15,9 @@ class Post(Base):
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     post_type: Mapped[PostType] = mapped_column(Enum(PostType, name="post_type"), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=True)
+    # Set only when post_type == repost. Nulled (not cascaded) if the original is deleted, so the
+    # repost itself survives as an orphaned repost rather than disappearing.
+    repost_of_id: Mapped[int] = mapped_column(ForeignKey("posts.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     author: Mapped["User"] = relationship()
@@ -28,6 +31,39 @@ class Post(Base):
         back_populates="post", cascade="all, delete-orphan", order_by="PostMedia.position"
     )
     tags: Mapped[list["PostTag"]] = relationship(back_populates="post", cascade="all, delete-orphan")
+    likes: Mapped[list["PostLike"]] = relationship(back_populates="post", cascade="all, delete-orphan")
+    comments: Mapped[list["PostComment"]] = relationship(
+        back_populates="post", cascade="all, delete-orphan", order_by="PostComment.created_at"
+    )
+    repost_of: Mapped["Post"] = relationship(remote_side=[id], back_populates="reposts")
+    reposts: Mapped[list["Post"]] = relationship(back_populates="repost_of")
+
+
+class PostLike(Base):
+    __tablename__ = "post_likes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    post: Mapped["Post"] = relationship(back_populates="likes")
+    user: Mapped["User"] = relationship()
+
+    __table_args__ = (UniqueConstraint("post_id", "user_id", name="uq_post_like"),)
+
+
+class PostComment(Base):
+    __tablename__ = "post_comments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    post: Mapped["Post"] = relationship(back_populates="comments")
+    author: Mapped["User"] = relationship()
 
 
 class PostMedia(Base):

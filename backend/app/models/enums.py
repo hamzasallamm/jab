@@ -27,6 +27,7 @@ class PostType(str, enum.Enum):
     fight_result = "fight_result"
     sparring_session = "sparring_session"
     text = "text"
+    repost = "repost"
 
 
 class FightOutcome(str, enum.Enum):
