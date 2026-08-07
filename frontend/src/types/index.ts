@@ -70,7 +70,7 @@ export interface FollowEntry {
   gym: GymSummary
 }
 
-export type PostType = 'text' | 'fight_result' | 'sparring_session'
+export type PostType = 'text' | 'fight_result' | 'sparring_session' | 'repost'
 export type MediaType = 'image' | 'video'
 export type FightOutcome = 'win' | 'loss' | 'draw' | 'no_contest'
 
@@ -109,6 +109,17 @@ export interface SparringSessionData {
   skill_level_notes: string | null
 }
 
+export interface RepostOfItem {
+  id: number
+  post_type: PostType
+  body: string | null
+  created_at: string
+  author: PostAuthor
+  media: PostMediaItem[]
+  fight_result: FightResultData | null
+  sparring_session: SparringSessionData | null
+}
+
 export interface PostItem {
   id: number
   post_type: PostType
@@ -119,6 +130,19 @@ export interface PostItem {
   tags: PostTagItem[]
   fight_result: FightResultData | null
   sparring_session: SparringSessionData | null
+  repost_of: RepostOfItem | null
+  like_count: number
+  comment_count: number
+  repost_count: number
+  liked_by_me: boolean
+  my_repost_id: number | null
+}
+
+export interface CommentItem {
+  id: number
+  body: string
+  created_at: string
+  author: PostAuthor
 }
 
 export type SparringRequestStatusType = 'pending' | 'accepted' | 'declined'
