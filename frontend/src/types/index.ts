@@ -1,6 +1,21 @@
 export type Sport = 'boxing' | 'mma' | 'bjj'
 export type FighterStatus = 'pro' | 'amateur'
 export type AccountType = 'fighter' | 'gym'
+export type BeltColor = 'white' | 'blue' | 'purple' | 'brown' | 'black'
+
+export interface FighterSport {
+  id: number
+  sport: Sport
+  gym: string | null
+  status: FighterStatus
+  belt: BeltColor | null
+  amateur_wins: number
+  amateur_losses: number
+  amateur_draws: number
+  pro_wins: number
+  pro_losses: number
+  pro_draws: number
+}
 
 export interface FighterProfile {
   id: number
@@ -9,16 +24,12 @@ export interface FighterProfile {
   last_name: string
   fight_name: string | null
   profile_picture_url: string | null
+  bio: string | null
   age: number
-  sport: Sport
-  gym: string | null
-  status: FighterStatus
-  amateur_wins: number
-  amateur_losses: number
-  amateur_draws: number
-  pro_wins: number
-  pro_losses: number
-  pro_draws: number
+  sports: FighterSport[]
+  follower_count: number
+  following_count: number
+  connection_count: number
 }
 
 export interface GymProfile {
@@ -28,6 +39,8 @@ export interface GymProfile {
   location: string | null
   bio: string | null
   sports: Sport[]
+  follower_count: number
+  following_count: number
 }
 
 export interface Me {
@@ -46,9 +59,7 @@ export interface FighterSummary {
   last_name: string
   fight_name: string | null
   profile_picture_url: string | null
-  sport: Sport
-  gym: string | null
-  status: FighterStatus
+  sports: FighterSport[]
 }
 
 export interface GymSummary {
@@ -63,11 +74,6 @@ export interface ConnectionEntry {
   status: ConnectionStatusType
   direction: 'incoming' | 'outgoing'
   fighter: FighterSummary
-}
-
-export interface FollowEntry {
-  id: number
-  gym: GymSummary
 }
 
 export type PostType = 'text' | 'fight_result' | 'sparring_session' | 'repost'
@@ -90,6 +96,11 @@ export interface PostAuthor {
   account_type: AccountType
   display_name: string
   profile_picture_url: string | null
+}
+
+export interface FollowEntry {
+  id: number
+  target: PostAuthor
 }
 
 export interface FightResultData {

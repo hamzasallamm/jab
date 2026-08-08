@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api, ApiError } from '../api/client'
-import { FighterAvatar, fighterDisplayName } from '../components/FighterIdentity'
+import { FighterAvatar, fighterDisplayName, gymsSummary, sportsSummary } from '../components/FighterIdentity'
 import { Button, Select, TextInput } from '../components/ui'
 import type { ConnectionEntry, FighterSummary, Sport } from '../types'
 
@@ -91,15 +92,15 @@ export function Fighters() {
                 key={fighter.user_id}
                 className="flex items-center justify-between gap-4 rounded border border-steel p-4"
               >
-                <div className="flex items-center gap-4">
+                <Link to={`/fighters/${fighter.user_id}`} className="flex items-center gap-4 hover:text-jab">
                   <FighterAvatar profile={fighter} size={56} />
                   <div>
                     <p className="font-display text-xl">{fighterDisplayName(fighter)}</p>
                     <p className="text-xs uppercase tracking-wide text-steel-light">
-                      {fighter.sport} · {fighter.status} · {fighter.gym || 'Unaffiliated'}
+                      {sportsSummary(fighter.sports)} · {gymsSummary(fighter.sports)}
                     </p>
                   </div>
-                </div>
+                </Link>
                 {conn?.status === 'accepted' ? (
                   <span className="text-sm uppercase tracking-wide text-amber">Connected</span>
                 ) : conn?.status === 'pending' && conn.direction === 'outgoing' ? (

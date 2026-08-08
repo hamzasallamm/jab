@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api, ApiError } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { Button, ErrorText, Field, Select, TextInput } from '../components/ui'
-import type { FighterStatus, Sport } from '../types'
+import type { BeltColor, FighterStatus, Sport } from '../types'
+
+const ALL_BELTS: BeltColor[] = ['white', 'blue', 'purple', 'brown', 'black']
 
 export function SignupFighter() {
   const [email, setEmail] = useState('')
@@ -15,6 +17,7 @@ export function SignupFighter() {
   const [sport, setSport] = useState<Sport>('mma')
   const [gym, setGym] = useState('')
   const [status, setStatus] = useState<FighterStatus>('amateur')
+  const [belt, setBelt] = useState<BeltColor | ''>('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const { setToken } = useAuth()
@@ -36,6 +39,7 @@ export function SignupFighter() {
           sport,
           gym: gym || null,
           status,
+          belt: sport === 'bjj' && belt ? belt : null,
         },
       })
       await setToken(res.access_token)
@@ -95,6 +99,18 @@ export function SignupFighter() {
             <option value="pro">Pro</option>
           </Select>
         </Field>
+        {sport === 'bjj' && (
+          <Field label="Belt (optional)">
+            <Select value={belt} onChange={(e) => setBelt(e.target.value as BeltColor)}>
+              <option value="">No belt set</option>
+              {ALL_BELTS.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
         {error && <ErrorText>{error}</ErrorText>}
         <Button type="submit" disabled={submitting}>
           {submitting ? 'Creating account...' : 'Create Account'}

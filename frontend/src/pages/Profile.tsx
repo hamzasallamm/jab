@@ -1,9 +1,12 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api/client'
-import { Button, ErrorText, Field, Select, TextInput } from '../components/ui'
+import { Button, ErrorText, Field, TextInput } from '../components/ui'
 import { FighterAvatar, fighterDisplayName } from '../components/FighterIdentity'
-import type { FighterProfile, GymProfile, Sport } from '../types'
+import { FighterSportsSection } from '../components/FighterSportsSection'
+import { SocialCounts } from '../components/SocialCounts'
+import { PostCard } from '../components/PostCard'
+import type { FighterProfile, GymProfile, PostItem, Sport } from '../types'
 
 export function Profile() {
   const { me, refreshMe } = useAuth()
@@ -13,20 +16,30 @@ export function Profile() {
   return (
     <div className="mx-auto mt-12 max-w-lg px-4 pb-16">
       {me.account_type === 'fighter' && me.fighter_profile && (
-        <FighterProfileCard profile={me.fighter_profile} onSaved={refreshMe} />
+        <FighterProfileCard profile={me.fighter_profile} userId={me.id} onSaved={refreshMe} />
       )}
       {me.account_type === 'gym' && me.gym_profile && <GymProfileCard profile={me.gym_profile} onSaved={refreshMe} />}
     </div>
   )
 }
 
-function FighterProfileCard({ profile, onSaved }: { profile: FighterProfile; onSaved: () => void }) {
+function FighterProfileCard({
+  profile,
+  userId,
+  onSaved,
+}: {
+  profile: FighterProfile
+  userId: number
+  onSaved: () => void
+}) {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(profile)
   const [saving, setSaving] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [photoError, setPhotoError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => setForm(profile), [profile])
 
   async function save() {
     setSaving(true)
@@ -35,16 +48,8 @@ function FighterProfileCard({ profile, onSaved }: { profile: FighterProfile; onS
         first_name: form.first_name,
         last_name: form.last_name,
         fight_name: form.fight_name || null,
+        bio: form.bio || null,
         age: Number(form.age),
-        sport: form.sport,
-        gym: form.gym,
-        status: form.status,
-        amateur_wins: Number(form.amateur_wins),
-        amateur_losses: Number(form.amateur_losses),
-        amateur_draws: Number(form.amateur_draws),
-        pro_wins: Number(form.pro_wins),
-        pro_losses: Number(form.pro_losses),
-        pro_draws: Number(form.pro_draws),
       })
       await onSaved()
       setEditing(false)
@@ -59,11 +64,9 @@ function FighterProfileCard({ profile, onSaved }: { profile: FighterProfile; onS
     setPhotoError(null)
     setUploadingPhoto(true)
     try {
-      await api.postForm('/profiles/me/fighter/photo', (() => {
-        const data = new FormData()
-        data.append('file', file)
-        return data
-      })())
+      const data = new FormData()
+      data.append('file', file)
+      await api.postForm('/profiles/me/fighter/photo', data)
       await onSaved()
     } catch {
       setPhotoError('Could not upload photo. Use a JPEG, PNG, or WebP under 5MB.')
@@ -80,18 +83,24 @@ function FighterProfileCard({ profile, onSaved }: { profile: FighterProfile; onS
           <FighterAvatar profile={profile} />
           <div>
             <h1 className="font-display text-4xl">{fighterDisplayName(profile)}</h1>
-            <p className="mt-1 text-steel-light uppercase tracking-wide text-sm">
-              {profile.sport} · {profile.status} · {profile.gym || 'Unaffiliated'} · Age {profile.age}
-            </p>
+            <p className="mt-1 text-steel-light text-sm">Age {profile.age}</p>
           </div>
         </div>
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <RecordBlock label="Amateur" w={profile.amateur_wins} l={profile.amateur_losses} d={profile.amateur_draws} />
-          <RecordBlock label="Pro" w={profile.pro_wins} l={profile.pro_losses} d={profile.pro_draws} />
-        </div>
-        <Button variant="ghost" onClick={() => setEditing(true)} className="mt-8">
+        {profile.bio && <p className="mt-4 whitespace-pre-wrap">{profile.bio}</p>}
+        <SocialCounts
+          followerCount={profile.follower_count}
+          followingCount={profile.following_count}
+          connectionCount={profile.connection_count}
+        />
+        <Button variant="ghost" onClick={() => setEditing(true)} className="mt-6">
           Edit Profile
         </Button>
+
+        <h2 className="font-display mt-10 text-2xl">Sports</h2>
+        <FighterSportsSection sports={profile.sports} editable onChanged={onSaved} />
+
+        <h2 className="font-display mt-10 text-2xl">Posts</h2>
+        <MyPosts userId={userId} />
       </div>
     )
   }
@@ -135,41 +144,15 @@ function FighterProfileCard({ profile, onSaved }: { profile: FighterProfile; onS
           onChange={(e) => setForm({ ...form, age: Number(e.target.value) })}
         />
       </Field>
-      <Field label="Sport">
-        <Select value={form.sport} onChange={(e) => setForm({ ...form, sport: e.target.value as Sport })}>
-          <option value="boxing">Boxing</option>
-          <option value="mma">MMA</option>
-          <option value="bjj">BJJ</option>
-        </Select>
-      </Field>
-      <Field label="Gym">
-        <TextInput value={form.gym ?? ''} onChange={(e) => setForm({ ...form, gym: e.target.value })} />
-      </Field>
-      <Field label="Status">
-        <Select
-          value={form.status}
-          onChange={(e) => setForm({ ...form, status: e.target.value as 'pro' | 'amateur' })}
-        >
-          <option value="amateur">Amateur</option>
-          <option value="pro">Pro</option>
-        </Select>
-      </Field>
-      <div className="grid grid-cols-2 gap-4">
-        <RecordEdit
-          label="Amateur"
-          w={form.amateur_wins}
-          l={form.amateur_losses}
-          d={form.amateur_draws}
-          onChange={(w, l, d) => setForm({ ...form, amateur_wins: w, amateur_losses: l, amateur_draws: d })}
+      <Field label="Bio">
+        <textarea
+          value={form.bio ?? ''}
+          onChange={(e) => setForm({ ...form, bio: e.target.value })}
+          rows={4}
+          placeholder="Tell people about yourself"
+          className="rounded border border-steel bg-surface px-3 py-2 text-bone placeholder:text-steel-light focus:border-jab focus:outline-none"
         />
-        <RecordEdit
-          label="Pro"
-          w={form.pro_wins}
-          l={form.pro_losses}
-          d={form.pro_draws}
-          onChange={(w, l, d) => setForm({ ...form, pro_wins: w, pro_losses: l, pro_draws: d })}
-        />
-      </div>
+      </Field>
       <div className="mt-4 flex gap-3">
         <Button onClick={save} disabled={saving}>
           {saving ? 'Saving...' : 'Save'}
@@ -188,38 +171,21 @@ function FighterProfileCard({ profile, onSaved }: { profile: FighterProfile; onS
   )
 }
 
-function RecordBlock({ label, w, l, d }: { label: string; w: number; l: number; d: number }) {
-  return (
-    <div className="rounded border border-steel p-4 text-center">
-      <p className="text-xs uppercase tracking-wider text-steel-light">{label}</p>
-      <p className="font-display text-3xl mt-1">
-        {w}-{l}-{d}
-      </p>
-    </div>
-  )
-}
+function MyPosts({ userId }: { userId: number }) {
+  const [posts, setPosts] = useState<PostItem[] | null>(null)
 
-function RecordEdit({
-  label,
-  w,
-  l,
-  d,
-  onChange,
-}: {
-  label: string
-  w: number
-  l: number
-  d: number
-  onChange: (w: number, l: number, d: number) => void
-}) {
+  useEffect(() => {
+    api.get<PostItem[]>(`/posts/by-user/${userId}`).then(setPosts)
+  }, [userId])
+
+  if (posts === null) return <p className="mt-4 text-steel-light">Loading...</p>
+  if (posts.length === 0) return <p className="mt-4 text-steel-light">No posts yet.</p>
+
   return (
-    <div className="rounded border border-steel p-3">
-      <p className="text-xs uppercase tracking-wider text-steel-light mb-2">{label}</p>
-      <div className="grid grid-cols-3 gap-2">
-        <TextInput type="number" value={w} onChange={(e) => onChange(Number(e.target.value), l, d)} />
-        <TextInput type="number" value={l} onChange={(e) => onChange(w, Number(e.target.value), d)} />
-        <TextInput type="number" value={d} onChange={(e) => onChange(w, l, Number(e.target.value))} />
-      </div>
+    <div className="mt-4 flex flex-col gap-4">
+      {posts.map((p) => (
+        <PostCard key={p.id} post={p} />
+      ))}
     </div>
   )
 }
@@ -254,7 +220,8 @@ function GymProfileCard({ profile, onSaved }: { profile: GymProfile; onSaved: ()
           {profile.location || 'Location not set'} · {profile.sports.join(', ') || 'No sports listed'}
         </p>
         {profile.bio && <p className="mt-4">{profile.bio}</p>}
-        <Button variant="ghost" onClick={() => setEditing(true)} className="mt-8">
+        <SocialCounts followerCount={profile.follower_count} followingCount={profile.following_count} />
+        <Button variant="ghost" onClick={() => setEditing(true)} className="mt-6">
           Edit Profile
         </Button>
       </div>

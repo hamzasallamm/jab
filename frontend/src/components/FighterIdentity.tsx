@@ -1,5 +1,15 @@
 import { API_BASE } from '../api/client'
-import type { FighterProfile, FighterSummary } from '../types'
+import type { FighterProfile, FighterSport, FighterSummary } from '../types'
+
+export function sportsSummary(sports: FighterSport[]): string {
+  if (sports.length === 0) return 'No sports listed'
+  return sports.map((s) => `${s.sport.toUpperCase()} (${s.status})`).join(' · ')
+}
+
+export function gymsSummary(sports: FighterSport[]): string {
+  const gyms = [...new Set(sports.map((s) => s.gym).filter((g): g is string => !!g))]
+  return gyms.length > 0 ? gyms.join(', ') : 'Unaffiliated'
+}
 
 type NamedFighter = Pick<FighterProfile | FighterSummary, 'first_name' | 'last_name' | 'fight_name'>
 type PicturedFighter = NamedFighter & Pick<FighterProfile | FighterSummary, 'profile_picture_url'>

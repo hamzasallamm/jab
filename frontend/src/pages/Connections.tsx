@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, ApiError } from '../api/client'
-import { FighterAvatar, fighterDisplayName } from '../components/FighterIdentity'
+import { FighterAvatar, fighterDisplayName, gymsSummary, sportsSummary } from '../components/FighterIdentity'
 import { Button } from '../components/ui'
 import type { ConnectionEntry } from '../types'
 
@@ -115,15 +115,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Row({ entry, children }: { entry: ConnectionEntry; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 rounded border border-steel p-4">
-      <div className="flex items-center gap-4">
+      <Link to={`/fighters/${entry.fighter.user_id}`} className="flex items-center gap-4 hover:text-jab">
         <FighterAvatar profile={entry.fighter} size={56} />
         <div>
           <p className="font-display text-xl">{fighterDisplayName(entry.fighter)}</p>
           <p className="text-xs uppercase tracking-wide text-steel-light">
-            {entry.fighter.sport} · {entry.fighter.status} · {entry.fighter.gym || 'Unaffiliated'}
+            {sportsSummary(entry.fighter.sports)} · {gymsSummary(entry.fighter.sports)}
           </p>
         </div>
-      </div>
+      </Link>
       <div className="flex gap-2">{children}</div>
     </div>
   )

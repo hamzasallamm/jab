@@ -103,6 +103,8 @@ function PostBody({ post }: { post: Pick<PostItem, 'post_type' | 'body' | 'fight
 export function PostCard({ post: initialPost }: { post: PostItem }) {
   const [post, setPost] = useState(initialPost)
   const [showComments, setShowComments] = useState(false)
+  const [showRepostComposer, setShowRepostComposer] = useState(false)
+  const [repostCaption, setRepostCaption] = useState('')
   const [busy, setBusy] = useState(false)
 
   async function toggleLike() {
@@ -120,17 +122,34 @@ export function PostCard({ post: initialPost }: { post: PostItem }) {
     }
   }
 
-  async function toggleRepost() {
+  function handleRepostClick() {
+    if (post.my_repost_id) undoRepost()
+    else setShowRepostComposer((s) => !s)
+  }
+
+  async function undoRepost() {
     if (busy) return
     setBusy(true)
     try {
-      if (post.my_repost_id) {
-        await api.delete(`/posts/${post.my_repost_id}`)
-        setPost((p) => ({ ...p, my_repost_id: null, repost_count: Math.max(0, p.repost_count - 1) }))
-      } else {
-        const created = await api.postForm<PostItem>(`/posts/${post.id}/repost`, new FormData())
-        setPost((p) => ({ ...p, my_repost_id: created.id, repost_count: p.repost_count + 1 }))
-      }
+      await api.delete(`/posts/${post.my_repost_id}`)
+      setPost((p) => ({ ...p, my_repost_id: null, repost_count: Math.max(0, p.repost_count - 1) }))
+    } catch {
+      // best-effort; UI just stays as-is on failure
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function submitRepost() {
+    if (busy) return
+    setBusy(true)
+    try {
+      const form = new FormData()
+      if (repostCaption.trim()) form.append('body', repostCaption.trim())
+      const created = await api.postForm<PostItem>(`/posts/${post.id}/repost`, form)
+      setPost((p) => ({ ...p, my_repost_id: created.id, repost_count: p.repost_count + 1 }))
+      setShowRepostComposer(false)
+      setRepostCaption('')
     } catch {
       // best-effort; UI just stays as-is on failure (e.g. a duplicate-repost race)
     } finally {
@@ -178,13 +197,43 @@ export function PostCard({ post: initialPost }: { post: PostItem }) {
           {post.comment_count > 0 && post.comment_count}
         </button>
         <button
-          onClick={toggleRepost}
+          onClick={handleRepostClick}
           className={`flex items-center gap-1.5 text-sm hover:text-amber ${post.my_repost_id ? 'text-amber' : ''}`}
         >
           <RepostIcon />
           {post.repost_count > 0 && post.repost_count}
         </button>
       </div>
+
+      {showRepostComposer && (
+        <div className="mt-3 border-t border-steel pt-3">
+          <textarea
+            value={repostCaption}
+            onChange={(e) => setRepostCaption(e.target.value)}
+            placeholder="Add a comment (optional)"
+            rows={2}
+            className="w-full rounded border border-steel bg-surface px-3 py-2 text-sm text-bone placeholder:text-steel-light focus:border-jab focus:outline-none"
+          />
+          <div className="mt-2 flex gap-2">
+            <button
+              onClick={submitRepost}
+              disabled={busy}
+              className="rounded bg-jab px-3 py-1.5 text-sm text-bone disabled:opacity-50"
+            >
+              Repost
+            </button>
+            <button
+              onClick={() => {
+                setShowRepostComposer(false)
+                setRepostCaption('')
+              }}
+              className="px-3 py-1.5 text-sm text-steel-light hover:text-bone"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {showComments && (
         <CommentsSection

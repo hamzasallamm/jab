@@ -13,7 +13,7 @@ export function Gyms() {
   const [loading, setLoading] = useState(true)
   const [actionError, setActionError] = useState<string | null>(null)
 
-  const canFollow = me?.account_type === 'fighter'
+  const canFollow = !!me
 
   async function load() {
     setLoading(true)
@@ -26,7 +26,7 @@ export function Gyms() {
         canFollow ? api.get<FollowEntry[]>('/follows/me') : Promise.resolve([] as FollowEntry[]),
       ])
       setGyms(gymsRes)
-      setFollowedIds(new Set(followsRes.map((f) => f.gym.user_id)))
+      setFollowedIds(new Set(followsRes.map((f) => f.target.user_id)))
     } finally {
       setLoading(false)
     }

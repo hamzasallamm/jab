@@ -12,6 +12,7 @@ import { Gyms } from './pages/Gyms'
 import { Connections } from './pages/Connections'
 import { Home } from './pages/Home'
 import { Sparring } from './pages/Sparring'
+import { FighterProfilePage } from './pages/FighterProfilePage'
 
 function Nav() {
   return (
@@ -62,6 +63,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Fighters />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/fighters/:userId"
+          element={
+            <ProtectedRoute>
+              <FighterProfilePage />
             </ProtectedRoute>
           }
         />
