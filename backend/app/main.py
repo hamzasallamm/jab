@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.media import MEDIA_ROOT
-from app.routers import auth, connections, follows, posts, profiles, sparring
+from app.routers import auth, connections, follows, messages, posts, profiles, sparring
 
 app = FastAPI(title="JAB API")
 
@@ -25,6 +25,7 @@ app.include_router(connections.router)
 app.include_router(follows.router)
 app.include_router(posts.router)
 app.include_router(sparring.router)
+app.include_router(messages.router)
 
 
 @app.get("/health")
