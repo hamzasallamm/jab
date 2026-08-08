@@ -33,6 +33,7 @@ def _to_connection_out(connection: Connection, current_user_id: int) -> Connecti
 def list_fighters(
     sport: Sport | None = None,
     gym: str | None = None,
+    q: str | None = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -43,6 +44,15 @@ def list_fighters(
             query = query.filter(FighterSport.sport == sport)
         if gym:
             query = query.filter(FighterSport.gym.ilike(f"%{gym}%"))
+    if q:
+        pattern = f"%{q}%"
+        query = query.filter(
+            or_(
+                FighterProfile.first_name.ilike(pattern),
+                FighterProfile.last_name.ilike(pattern),
+                FighterProfile.fight_name.ilike(pattern),
+            )
+        )
     return query.order_by(FighterProfile.first_name).distinct().limit(100).all()
 
 
