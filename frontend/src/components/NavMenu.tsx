@@ -69,7 +69,7 @@ export function NavMenu() {
     if (!me) return
     async function poll() {
       try {
-        const conversations = await api.get<ConversationItem[]>('/messages/conversations')
+        const conversations = await api.get<ConversationItem[]>('/conversations')
         setUnreadCount(conversations.reduce((sum, c) => sum + c.unread_count, 0))
       } catch {
         // ignore transient failures; next poll will retry

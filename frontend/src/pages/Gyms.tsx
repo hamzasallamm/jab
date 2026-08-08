@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api, ApiError } from '../api/client'
 import { Button, Select, TextInput } from '../components/ui'
-import type { FollowEntry, GymSummary, Sport } from '../types'
+import type { ConversationItem, FollowEntry, GymSummary, Sport } from '../types'
 
 export function Gyms() {
   const { me } = useAuth()
@@ -15,6 +15,7 @@ export function Gyms() {
   const [actionError, setActionError] = useState<string | null>(null)
 
   const canFollow = !!me
+  const navigate = useNavigate()
 
   // `silent` skips the full loading state so the list doesn't blank out (and
   // the page doesn't visually jump) when refreshing after a follow/unfollow.
@@ -60,6 +61,16 @@ export function Gyms() {
     }
   }
 
+  async function messageGym(userId: number) {
+    setActionError(null)
+    try {
+      const conv = await api.post<ConversationItem>('/conversations', { participant_ids: [userId] })
+      navigate(`/messages/${conv.id}`)
+    } catch (err) {
+      setActionError(err instanceof ApiError ? err.message : 'Something went wrong')
+    }
+  }
+
   return (
     <div className="mx-auto mt-12 max-w-2xl px-4 pb-16">
       <h1 className="font-display text-4xl">Gyms &amp; Orgs</h1>
@@ -100,20 +111,9 @@ export function Gyms() {
                       <Button onClick={() => follow(gym.user_id)}>Follow</Button>
                     ))}
                   {me && (
-                    <Link
-                      to={`/messages/${gym.user_id}`}
-                      state={{
-                        otherUser: {
-                          user_id: gym.user_id,
-                          account_type: 'gym',
-                          display_name: gym.org_name,
-                          profile_picture_url: null,
-                        },
-                      }}
-                      className="flex items-center rounded border border-steel px-6 py-2.5 text-sm hover:border-jab hover:text-jab"
-                    >
+                    <Button variant="ghost" onClick={() => messageGym(gym.user_id)}>
                       Message
-                    </Link>
+                    </Button>
                   )}
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api, ApiError } from '../api/client'
 import { Button } from '../components/ui'
@@ -7,7 +7,7 @@ import { FighterAvatar, fighterDisplayName } from '../components/FighterIdentity
 import { FighterSportsSection } from '../components/FighterSportsSection'
 import { SocialCounts } from '../components/SocialCounts'
 import { PostCard } from '../components/PostCard'
-import type { ConnectionEntry, FighterProfile, FollowEntry, PostItem } from '../types'
+import type { ConnectionEntry, ConversationItem, FighterProfile, FollowEntry, PostItem } from '../types'
 
 type ConnState = { connectionId: number; status: 'pending' | 'accepted'; direction: 'incoming' | 'outgoing' } | null
 
@@ -16,6 +16,7 @@ export function FighterProfilePage() {
   const targetId = Number(userId)
   const { me } = useAuth()
   const isSelf = me?.id === targetId
+  const navigate = useNavigate()
 
   const [profile, setProfile] = useState<FighterProfile | null>(null)
   const [posts, setPosts] = useState<PostItem[] | null>(null)
@@ -89,6 +90,19 @@ export function FighterProfilePage() {
     }
   }
 
+  async function messageThem() {
+    setError(null)
+    setBusy(true)
+    try {
+      const conv = await api.post<ConversationItem>('/conversations', { participant_ids: [targetId] })
+      navigate(`/messages/${conv.id}`)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Something went wrong')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   if (!profile) return <p className="mt-16 text-center text-steel-light">Loading...</p>
 
   return (
@@ -130,13 +144,9 @@ export function FighterProfilePage() {
                 Connect
               </Button>
             ))}
-          <Link
-            to={`/messages/${targetId}`}
-            state={{ otherUser: { user_id: targetId, account_type: 'fighter', display_name: fighterDisplayName(profile), profile_picture_url: profile.profile_picture_url } }}
-            className="flex items-center rounded border border-steel px-6 py-2.5 text-sm hover:border-jab hover:text-jab"
-          >
+          <Button variant="ghost" onClick={messageThem} disabled={busy}>
             Message
-          </Link>
+          </Button>
         </div>
       )}
 

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api, ApiError } from '../api/client'
+import { Avatar } from './Avatar'
 import { Button, ErrorText, Field, Select, TextInput } from './ui'
-import type { ConnectionEntry, FightOutcome, PostItem, Sport } from '../types'
+import type { FighterSummary, FightOutcome, PostItem, Sport } from '../types'
 
 type Tab = 'text' | 'fight_result'
 
@@ -14,8 +15,9 @@ export function CreatePost({ onCreated }: { onCreated: (post: PostItem) => void 
   const [tab, setTab] = useState<Tab>('text')
   const [body, setBody] = useState('')
   const [files, setFiles] = useState<File[]>([])
-  const [taggedIds, setTaggedIds] = useState<number[]>([])
-  const [connections, setConnections] = useState<ConnectionEntry[]>([])
+  const [taggedFighters, setTaggedFighters] = useState<FighterSummary[]>([])
+  const [tagQuery, setTagQuery] = useState('')
+  const [tagResults, setTagResults] = useState<FighterSummary[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -26,20 +28,31 @@ export function CreatePost({ onCreated }: { onCreated: (post: PostItem) => void 
   const [eventDate, setEventDate] = useState('')
 
   useEffect(() => {
-    api
-      .get<ConnectionEntry[]>('/connections?status=accepted')
-      .then(setConnections)
-      .catch(() => {})
-  }, [])
+    if (!tagQuery.trim()) {
+      setTagResults([])
+      return
+    }
+    const timeout = setTimeout(async () => {
+      const res = await api.get<FighterSummary[]>(`/connections/fighters?q=${encodeURIComponent(tagQuery)}`)
+      setTagResults(res)
+    }, 250)
+    return () => clearTimeout(timeout)
+  }, [tagQuery])
 
-  function toggleTag(id: number) {
-    setTaggedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  function addTag(fighter: FighterSummary) {
+    setTaggedFighters((prev) => (prev.some((f) => f.user_id === fighter.user_id) ? prev : [...prev, fighter]))
+    setTagQuery('')
+    setTagResults([])
+  }
+
+  function removeTag(userId: number) {
+    setTaggedFighters((prev) => prev.filter((f) => f.user_id !== userId))
   }
 
   function resetForm() {
     setBody('')
     setFiles([])
-    setTaggedIds([])
+    setTaggedFighters([])
     setOpponentName('')
     setEventName('')
     setEventDate('')
@@ -55,7 +68,7 @@ export function CreatePost({ onCreated }: { onCreated: (post: PostItem) => void 
     try {
       const form = new FormData()
       if (body) form.append('body', body)
-      taggedIds.forEach((id) => form.append('tagged_user_ids', String(id)))
+      taggedFighters.forEach((f) => form.append('tagged_user_ids', String(f.user_id)))
       files.forEach((f) => form.append('files', f))
 
       let path = '/posts/text'
@@ -144,27 +157,51 @@ export function CreatePost({ onCreated }: { onCreated: (post: PostItem) => void 
           {files.length > 0 && <p className="mt-1 text-xs text-steel-light">{files.length} file(s) selected</p>}
         </div>
 
-        {connections.length > 0 && (
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-steel-light">Tag People</label>
+        <div className="relative">
+          <label className="text-xs font-semibold uppercase tracking-wider text-steel-light">Tag People</label>
+
+          {taggedFighters.length > 0 && (
             <div className="mt-1.5 flex flex-wrap gap-2">
-              {connections.map((c) => (
+              {taggedFighters.map((f) => (
                 <button
-                  key={c.fighter.user_id}
+                  key={f.user_id}
                   type="button"
-                  onClick={() => toggleTag(c.fighter.user_id)}
-                  className={`rounded-full border px-3 py-1 text-xs ${
-                    taggedIds.includes(c.fighter.user_id)
-                      ? 'border-jab bg-jab/20 text-bone'
-                      : 'border-steel text-steel-light'
-                  }`}
+                  onClick={() => removeTag(f.user_id)}
+                  className="rounded-full border border-jab bg-jab/20 px-3 py-1 text-xs text-bone"
                 >
-                  {c.fighter.first_name} {c.fighter.last_name}
+                  {f.first_name} {f.last_name} ✕
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          )}
+
+          <TextInput
+            value={tagQuery}
+            onChange={(e) => setTagQuery(e.target.value)}
+            placeholder="Search fighters to tag..."
+            className="mt-1.5"
+          />
+
+          {tagResults.length > 0 && (
+            <div className="absolute z-10 mt-1 w-full rounded border border-steel bg-surface shadow-lg">
+              {tagResults
+                .filter((f) => !taggedFighters.some((t) => t.user_id === f.user_id))
+                .map((f) => (
+                  <button
+                    key={f.user_id}
+                    type="button"
+                    onClick={() => addTag(f)}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-left hover:bg-jab/10"
+                  >
+                    <Avatar name={`${f.first_name} ${f.last_name}`} pictureUrl={f.profile_picture_url} size={28} />
+                    <span className="text-sm">
+                      {f.first_name} {f.last_name}
+                    </span>
+                  </button>
+                ))}
+            </div>
+          )}
+        </div>
 
         {error && <ErrorText>{error}</ErrorText>}
         <Button onClick={submit} disabled={submitting} className="self-start">

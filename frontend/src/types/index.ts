@@ -183,17 +183,38 @@ export interface SparringRequesterItem {
   requester_profile_picture_url: string | null
 }
 
+export interface ReactionSummary {
+  emoji: string
+  count: number
+  reacted_by_me: boolean
+}
+
+export interface SharedPostItem {
+  id: number
+  post_type: PostType
+  body: string | null
+  author: PostAuthor
+  media: PostMediaItem[]
+  fight_result: FightResultData | null
+  sparring_session: SparringSessionData | null
+}
+
 export interface MessageItem {
   id: number
+  conversation_id: number
   sender_id: number
-  recipient_id: number
-  body: string
+  body: string | null
+  shared_post: SharedPostItem | null
+  edited_at: string | null
   created_at: string
-  read_at: string | null
+  reactions: ReactionSummary[]
 }
 
 export interface ConversationItem {
-  other_user: PostAuthor
-  last_message: MessageItem
+  id: number
+  is_group: boolean
+  name: string | null
+  participants: PostAuthor[]
+  last_message: MessageItem | null
   unread_count: number
 }
