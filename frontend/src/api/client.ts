@@ -1,4 +1,8 @@
-export const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000'
+// Defaults to whatever host the page itself was loaded from (with the API's
+// port) rather than a hardcoded address, so the same build works whether it's
+// opened as localhost:5173 or from another device via the dev machine's LAN
+// IP — no env var to keep in sync with whichever network you're on.
+export const API_BASE = import.meta.env.VITE_API_BASE ?? `http://${window.location.hostname}:8000`
 
 export class ApiError extends Error {
   status: number
