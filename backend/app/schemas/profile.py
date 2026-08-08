@@ -50,6 +50,9 @@ class FighterProfileOut(BaseModel):
     bio: str | None
     age: int
     sports: list[FighterSportOut]
+    follower_count: int = 0
+    following_count: int = 0
+    connection_count: int = 0
 
 
 class FighterProfileUpdate(BaseModel):
@@ -69,6 +72,8 @@ class GymProfileOut(BaseModel):
     location: str | None
     bio: str | None
     sports: list[Sport]
+    follower_count: int = 0
+    following_count: int = 0
 
     @classmethod
     def from_model(cls, gym_profile) -> "GymProfileOut":

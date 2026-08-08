@@ -223,6 +223,21 @@ def create_comment(
     return CommentOut(id=comment.id, body=comment.body, created_at=comment.created_at, author=_author_out(current_user))
 
 
+@router.get("/by-user/{user_id}", response_model=list[PostOut])
+def list_posts_by_user(
+    user_id: int, limit: int = 50, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    posts = (
+        db.query(Post)
+        .options(*_post_options())
+        .filter(Post.author_id == user_id, Post.post_type != PostType.sparring_session)
+        .order_by(Post.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+    return [PostOut.from_model(p, current_user.id) for p in posts]
+
+
 @router.get("/feed", response_model=list[PostOut])
 def get_feed(limit: int = 50, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     connections = (

@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
 from app.models.enums import ConnectionStatus, Sport
+from app.schemas.post import PostAuthorOut
 from app.schemas.profile import FighterSportOut
 
 
@@ -44,4 +45,4 @@ class ConnectionOut(BaseModel):
 
 class FollowOut(BaseModel):
     id: int
-    gym: GymSummary
+    target: PostAuthorOut

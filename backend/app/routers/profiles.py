@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
 from app.core.media import save_avatar
 from app.database import get_db
-from app.models.enums import AccountType, Sport
+from app.models.connection import Connection, Follow
+from app.models.enums import AccountType, ConnectionStatus, Sport
 from app.models.fighter_profile import FighterProfile, FighterSport
 from app.models.gym_profile import GymProfile, GymSport
 from app.models.user import User
@@ -22,16 +24,48 @@ from app.schemas.profile import (
 router = APIRouter(prefix="/profiles", tags=["profiles"])
 
 
+def _follower_count(db: Session, user_id: int) -> int:
+    return db.query(Follow).filter(Follow.followee_id == user_id).count()
+
+
+def _following_count(db: Session, user_id: int) -> int:
+    return db.query(Follow).filter(Follow.follower_id == user_id).count()
+
+
+def _connection_count(db: Session, user_id: int) -> int:
+    return (
+        db.query(Connection)
+        .filter(
+            Connection.status == ConnectionStatus.accepted,
+            or_(Connection.requester_id == user_id, Connection.addressee_id == user_id),
+        )
+        .count()
+    )
+
+
+def _fighter_out(profile: FighterProfile, db: Session) -> FighterProfileOut:
+    out = FighterProfileOut.model_validate(profile)
+    out.follower_count = _follower_count(db, profile.user_id)
+    out.following_count = _following_count(db, profile.user_id)
+    out.connection_count = _connection_count(db, profile.user_id)
+    return out
+
+
+def _gym_out(profile: GymProfile, db: Session) -> GymProfileOut:
+    out = GymProfileOut.from_model(profile)
+    out.follower_count = _follower_count(db, profile.user_id)
+    out.following_count = _following_count(db, profile.user_id)
+    return out
+
+
 @router.get("/me", response_model=MeOut)
-def get_me(current_user: User = Depends(get_current_user)):
+def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return MeOut(
         id=current_user.id,
         email=current_user.email,
         account_type=current_user.account_type,
-        fighter_profile=(
-            FighterProfileOut.model_validate(current_user.fighter_profile) if current_user.fighter_profile else None
-        ),
-        gym_profile=(GymProfileOut.from_model(current_user.gym_profile) if current_user.gym_profile else None),
+        fighter_profile=(_fighter_out(current_user.fighter_profile, db) if current_user.fighter_profile else None),
+        gym_profile=(_gym_out(current_user.gym_profile, db) if current_user.gym_profile else None),
     )
 
 
@@ -49,7 +83,7 @@ def update_my_fighter_profile(
         setattr(profile, field, value)
     db.commit()
     db.refresh(profile)
-    return profile
+    return _fighter_out(profile, db)
 
 
 @router.post("/me/fighter/sports", response_model=FighterSportOut, status_code=status.HTTP_201_CREATED)
@@ -132,7 +166,7 @@ def update_my_gym_profile(
         profile.sports = [GymSport(sport=s) for s in set(sports)]
     db.commit()
     db.refresh(profile)
-    return GymProfileOut.from_model(profile)
+    return _gym_out(profile, db)
 
 
 @router.post("/me/fighter/photo", response_model=FighterProfileOut)
@@ -148,7 +182,7 @@ def upload_my_fighter_photo(
     profile.profile_picture_url = save_avatar(current_user.id, file)
     db.commit()
     db.refresh(profile)
-    return profile
+    return _fighter_out(profile, db)
 
 
 @router.get("/fighters/{user_id}", response_model=FighterProfileOut)
@@ -156,7 +190,7 @@ def get_fighter_profile(user_id: int, db: Session = Depends(get_db)):
     profile = db.query(FighterProfile).filter(FighterProfile.user_id == user_id).first()
     if profile is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fighter not found")
-    return profile
+    return _fighter_out(profile, db)
 
 
 @router.get("/gyms/{user_id}", response_model=GymProfileOut)
@@ -164,4 +198,4 @@ def get_gym_profile(user_id: int, db: Session = Depends(get_db)):
     profile = db.query(GymProfile).filter(GymProfile.user_id == user_id).first()
     if profile is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gym not found")
-    return GymProfileOut.from_model(profile)
+    return _gym_out(profile, db)
