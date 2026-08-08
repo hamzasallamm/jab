@@ -14,8 +14,11 @@ export function Fighters() {
   const [loading, setLoading] = useState(true)
   const [actionError, setActionError] = useState<string | null>(null)
 
-  async function load() {
-    setLoading(true)
+  // `silent` skips the full loading state so the list doesn't blank out (and
+  // the page doesn't visually jump) when we're just refreshing after an
+  // action like Connect - only the very first load should show "Loading...".
+  async function load({ silent = false }: { silent?: boolean } = {}) {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams()
       if (sport) params.set('sport', sport)
@@ -32,7 +35,7 @@ export function Fighters() {
       }
       setConnectionByUserId(map)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -45,7 +48,7 @@ export function Fighters() {
     setActionError(null)
     try {
       await api.post(`/connections/${userId}`)
-      await load()
+      await load({ silent: true })
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : 'Something went wrong')
     }
@@ -55,7 +58,7 @@ export function Fighters() {
     setActionError(null)
     try {
       await api.delete(`/connections/${connectionId}`)
-      await load()
+      await load({ silent: true })
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : 'Something went wrong')
     }

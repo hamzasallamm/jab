@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 
-from app.models.enums import FighterStatus, Sport
+from app.models.enums import BeltColor, FighterStatus, Sport
 
 
 class FighterSignupExtra(BaseModel):
@@ -11,6 +11,7 @@ class FighterSignupExtra(BaseModel):
     sport: Sport
     gym: str | None = None
     status: FighterStatus
+    belt: BeltColor | None = None
 
 
 class GymSignupExtra(BaseModel):

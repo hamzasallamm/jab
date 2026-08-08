@@ -46,3 +46,11 @@ class SparringRequestStatus(str, enum.Enum):
 class MediaType(str, enum.Enum):
     image = "image"
     video = "video"
+
+
+class BeltColor(str, enum.Enum):
+    white = "white"
+    blue = "blue"
+    purple = "purple"
+    brown = "brown"
+    black = "black"

@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, hash_password, verify_password
 from app.database import get_db
-from app.models.enums import AccountType
-from app.models.fighter_profile import FighterProfile
+from app.models.enums import AccountType, Sport
+from app.models.fighter_profile import FighterProfile, FighterSport
 from app.models.gym_profile import GymProfile, GymSport
 from app.models.user import User
 from app.schemas.auth import FighterSignup, GymSignup, LoginRequest, TokenResponse
@@ -30,11 +30,19 @@ def signup_fighter(payload: FighterSignup, db: Session = Depends(get_db)):
         last_name=payload.fighter.last_name,
         fight_name=payload.fighter.fight_name,
         age=payload.fighter.age,
-        sport=payload.fighter.sport,
-        gym=payload.fighter.gym,
-        status=payload.fighter.status,
     )
     db.add(profile)
+    db.flush()
+
+    db.add(
+        FighterSport(
+            fighter_profile_id=profile.id,
+            sport=payload.fighter.sport,
+            gym=payload.fighter.gym,
+            status=payload.fighter.status,
+            belt=payload.fighter.belt if payload.fighter.sport == Sport.bjj else None,
+        )
+    )
     db.commit()
 
     return TokenResponse(access_token=create_access_token(subject=str(user.id)))

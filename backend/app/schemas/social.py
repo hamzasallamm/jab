@@ -2,7 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.enums import ConnectionStatus, FighterStatus, Sport
+from app.models.enums import ConnectionStatus, Sport
+from app.schemas.profile import FighterSportOut
 
 
 class FighterSummary(BaseModel):
@@ -13,9 +14,7 @@ class FighterSummary(BaseModel):
     last_name: str
     fight_name: str | None
     profile_picture_url: str | None
-    sport: Sport
-    gym: str | None
-    status: FighterStatus
+    sports: list[FighterSportOut]
 
 
 class GymSummary(BaseModel):

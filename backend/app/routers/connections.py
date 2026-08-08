@@ -6,7 +6,7 @@ from app.core.deps import get_current_user
 from app.database import get_db
 from app.models.connection import Connection
 from app.models.enums import AccountType, ConnectionStatus, Sport
-from app.models.fighter_profile import FighterProfile
+from app.models.fighter_profile import FighterProfile, FighterSport
 from app.models.user import User
 from app.schemas.social import ConnectionOut, FighterSummary
 
@@ -37,11 +37,13 @@ def list_fighters(
     db: Session = Depends(get_db),
 ):
     query = db.query(FighterProfile).filter(FighterProfile.user_id != current_user.id)
-    if sport:
-        query = query.filter(FighterProfile.sport == sport)
-    if gym:
-        query = query.filter(FighterProfile.gym.ilike(f"%{gym}%"))
-    return query.order_by(FighterProfile.first_name).limit(100).all()
+    if sport or gym:
+        query = query.join(FighterSport)
+        if sport:
+            query = query.filter(FighterSport.sport == sport)
+        if gym:
+            query = query.filter(FighterSport.gym.ilike(f"%{gym}%"))
+    return query.order_by(FighterProfile.first_name).distinct().limit(100).all()
 
 
 @router.get("", response_model=list[ConnectionOut])
