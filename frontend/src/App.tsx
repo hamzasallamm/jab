@@ -13,6 +13,8 @@ import { Connections } from './pages/Connections'
 import { Home } from './pages/Home'
 import { Sparring } from './pages/Sparring'
 import { FighterProfilePage } from './pages/FighterProfilePage'
+import { Messages } from './pages/Messages'
+import { MessageThread } from './pages/MessageThread'
 
 function Nav() {
   return (
@@ -87,6 +89,22 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Sparring />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <Messages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages/:userId"
+          element={
+            <ProtectedRoute>
+              <MessageThread />
             </ProtectedRoute>
           }
         />

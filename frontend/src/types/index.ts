@@ -182,3 +182,18 @@ export interface SparringRequesterItem {
   requester_display_name: string
   requester_profile_picture_url: string | null
 }
+
+export interface MessageItem {
+  id: number
+  sender_id: number
+  recipient_id: number
+  body: string
+  created_at: string
+  read_at: string | null
+}
+
+export interface ConversationItem {
+  other_user: PostAuthor
+  last_message: MessageItem
+  unread_count: number
+}

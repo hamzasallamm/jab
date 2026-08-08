@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { api } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import type { ConversationItem } from '../types'
 
 function SunIcon() {
   return (
@@ -27,14 +29,29 @@ function MoonIcon() {
   )
 }
 
-function MenuLink({ to, onClick, children }: { to: string; onClick: () => void; children: ReactNode }) {
+function MenuLink({
+  to,
+  onClick,
+  badge,
+  children,
+}: {
+  to: string
+  onClick: () => void
+  badge?: number
+  children: ReactNode
+}) {
   return (
     <Link
       to={to}
       onClick={onClick}
-      className="font-display px-6 py-4 text-2xl tracking-wide hover:bg-jab/10 hover:text-jab"
+      className="font-display flex items-center gap-2.5 px-6 py-4 text-2xl tracking-wide hover:bg-jab/10 hover:text-jab"
     >
       {children}
+      {!!badge && (
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-jab px-1.5 text-xs text-bone">
+          {badge}
+        </span>
+      )}
     </Link>
   )
 }
@@ -43,9 +60,25 @@ export function NavMenu() {
   const { me, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [open, setOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const location = useLocation()
 
   useEffect(() => setOpen(false), [location.pathname])
+
+  useEffect(() => {
+    if (!me) return
+    async function poll() {
+      try {
+        const conversations = await api.get<ConversationItem[]>('/messages/conversations')
+        setUnreadCount(conversations.reduce((sum, c) => sum + c.unread_count, 0))
+      } catch {
+        // ignore transient failures; next poll will retry
+      }
+    }
+    poll()
+    const interval = setInterval(poll, 8000)
+    return () => clearInterval(interval)
+  }, [me])
 
   useEffect(() => {
     if (!open) return
@@ -112,6 +145,9 @@ export function NavMenu() {
                   </MenuLink>
                 </>
               )}
+              <MenuLink to="/messages" onClick={close} badge={unreadCount}>
+                Messages
+              </MenuLink>
               <MenuLink to="/profile" onClick={close}>
                 Profile
               </MenuLink>

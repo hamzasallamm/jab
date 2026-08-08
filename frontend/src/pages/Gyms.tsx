@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api, ApiError } from '../api/client'
 import { Button, Select, TextInput } from '../components/ui'
@@ -15,8 +16,10 @@ export function Gyms() {
 
   const canFollow = !!me
 
-  async function load() {
-    setLoading(true)
+  // `silent` skips the full loading state so the list doesn't blank out (and
+  // the page doesn't visually jump) when refreshing after a follow/unfollow.
+  async function load({ silent = false }: { silent?: boolean } = {}) {
+    if (!silent) setLoading(true)
     try {
       const params = new URLSearchParams()
       if (sport) params.set('sport', sport)
@@ -28,7 +31,7 @@ export function Gyms() {
       setGyms(gymsRes)
       setFollowedIds(new Set(followsRes.map((f) => f.target.user_id)))
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -41,7 +44,7 @@ export function Gyms() {
     setActionError(null)
     try {
       await api.post(`/follows/${userId}`)
-      await load()
+      await load({ silent: true })
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : 'Something went wrong')
     }
@@ -51,7 +54,7 @@ export function Gyms() {
     setActionError(null)
     try {
       await api.delete(`/follows/${userId}`)
-      await load()
+      await load({ silent: true })
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : 'Something went wrong')
     }
@@ -87,14 +90,32 @@ export function Gyms() {
                     {gym.location || 'Location not set'} · {gym.sports.join(', ') || 'No sports listed'}
                   </p>
                 </div>
-                {canFollow &&
-                  (following ? (
-                    <Button variant="ghost" onClick={() => unfollow(gym.user_id)}>
-                      Following
-                    </Button>
-                  ) : (
-                    <Button onClick={() => follow(gym.user_id)}>Follow</Button>
-                  ))}
+                <div className="flex items-center gap-2">
+                  {canFollow &&
+                    (following ? (
+                      <Button variant="ghost" onClick={() => unfollow(gym.user_id)}>
+                        Following
+                      </Button>
+                    ) : (
+                      <Button onClick={() => follow(gym.user_id)}>Follow</Button>
+                    ))}
+                  {me && (
+                    <Link
+                      to={`/messages/${gym.user_id}`}
+                      state={{
+                        otherUser: {
+                          user_id: gym.user_id,
+                          account_type: 'gym',
+                          display_name: gym.org_name,
+                          profile_picture_url: null,
+                        },
+                      }}
+                      className="flex items-center rounded border border-steel px-6 py-2.5 text-sm hover:border-jab hover:text-jab"
+                    >
+                      Message
+                    </Link>
+                  )}
+                </div>
               </div>
             )
           })}

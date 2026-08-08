@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api, ApiError } from '../api/client'
 import { Button } from '../components/ui'
@@ -130,6 +130,13 @@ export function FighterProfilePage() {
                 Connect
               </Button>
             ))}
+          <Link
+            to={`/messages/${targetId}`}
+            state={{ otherUser: { user_id: targetId, account_type: 'fighter', display_name: fighterDisplayName(profile), profile_picture_url: profile.profile_picture_url } }}
+            className="flex items-center rounded border border-steel px-6 py-2.5 text-sm hover:border-jab hover:text-jab"
+          >
+            Message
+          </Link>
         </div>
       )}
 
